@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Meet Transcriptor",
+  "description": "Chrome extension to get transcription from meet",
+  "version": "1.0.0",
+  "permissions": [
+    "tabCapture",
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://meet.google.com/*"
+      ],
+      "js": [
+        "src/content-script.jsx"
+      ]
+    }
+  ]
+}
