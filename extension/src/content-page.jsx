@@ -1,7 +1,35 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import OverlayContainer from "./components/overlay/OverlayContainer";
 
 export default function App() {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isMinimized, setIsMinimized] = useState(true);
+    const [isRecording, setIsRecording] = useState(false);
+    const isRecordingRef = useRef(false);
+
+    const observer = useRef(null);
+
+    useEffect(() => {
+
+        axios.get("http://localhost:4000/user/auth", { withCredentials: true }).then((res) => {
+            setIsLoggedIn(res.data.success);
+        })
+    }, [])
+
+    useEffect(() => {
+
+        // console.log("isRecording", isRecording);
+        if (isRecording) {
+            startCaptionObserver();
+        }
+        else {
+            finalizeCurrentCaption();
+            observer.current?.disconnect();
+            clearTimeout(timeoutRef.current);
+        }
+
+    }, [isRecording]);
 
     // finalized transcript entries
     const transcript = useRef([]);
@@ -18,17 +46,25 @@ export default function App() {
     // previous emitted chunk
     const prevChunk = useRef([]);
 
-    useEffect(() => {
+    const startCaptionObserver = () => {
 
         const captionsRoot =
             document.querySelector('[aria-label="Captions"]');
 
+
         if (!captionsRoot) return;
 
-        const observer = new MutationObserver(() => {
+        console.log(captionsRoot)
+
+        // observer.current?.disconnect();
+
+        observer.current = new MutationObserver(() => {
+            // if (!isRecording) return;
 
             const captions =
-                captionsRoot.getElementsByClassName("UVSzeb");
+                captionsRoot.getElementsByClassName("bj4p3b");
+
+            console.log(captions)
 
             if (!captions.length) return;
 
@@ -51,6 +87,8 @@ export default function App() {
                         .trim();
 
                 if (!speaker || !text) return;
+
+                console.log(speaker, text);
 
                 // if speaker changed -> finalize previous caption
                 if (
@@ -79,18 +117,13 @@ export default function App() {
 
         });
 
-        observer.observe(captionsRoot, {
+        observer.current.observe(captionsRoot, {
             childList: true,
             subtree: true,
             characterData: true,
         });
 
-        return () => {
-            observer.disconnect();
-            clearTimeout(timeoutRef.current);
-        };
-
-    }, []);
+    };
 
     function finalizeCurrentCaption() {
 
@@ -127,10 +160,11 @@ export default function App() {
         generateChunk();
     }
 
-    function generateChunk() {
+    async function generateChunk() {
 
         // chunk after every 4 utterances
-        if (transcript.current.length < 4) return;
+        if (transcript.current.length < 20) return;
+        // console.log(transcript.current);
 
         // overlap = last 1 utterance from previous chunk
         const overlap =
@@ -171,14 +205,27 @@ export default function App() {
 
         console.log("CHUNK:");
 
-        console.log(uniqueChunk);
-
-        axios.post("http://localhost:3000/data/upload-chunk", { chunk: uniqueChunk })
+        // console.log(uniqueChunk);
+        try {
+            const meetingId = window.location.pathname.slice(1);
+            const res = await axios.post("http://localhost:3000/data/upload-chunk", { chunk: uniqueChunk, meeting_id: meetingId })
+            console.log(res.data);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     return (
-        <div>
-            Google Meet Caption Listener
-        </div>
+        <OverlayContainer
+            isMinimized={isMinimized}
+            setIsMinimized={setIsMinimized}
+            isLoggedIn={isLoggedIn}
+            setIsLoggedIn={setIsLoggedIn}
+            isRecording={isRecording}
+            setIsRecording={setIsRecording}
+        />
+        // <div className="bg-red-500 absolute top-0 left-0 w-full h-full z-50">
+        //     hello worldjkk;l'
+        // </div>
     );
 }
