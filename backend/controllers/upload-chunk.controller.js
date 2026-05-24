@@ -27,7 +27,7 @@ const summarizeChunk = async (chunk, meeting_id, chunk_id) => {
         for (let i = 0; i < chunkMemory[meeting_id].length; i++) {
             summary_text += chunkMemory[meeting_id] + "\n";
         }
-        console.log(summary_text)
+        // console.log(summary_text)
         const summary = await llm.invoke(`Generate This text summary in less than 20 words and give only the summary no other text ${summary_text}`)
         // console.log(summary['content'])
         try {
@@ -46,6 +46,8 @@ const uploadChunk = async (req, res) => {
     console.log("Uploading chunk");
     try {
         const { chunk } = req.body;
+        console.log(chunk)
+        const original_meeting_id = req.body.meeting_id;
         const meeting_id = req.body.meeting_id + " " + req.user.gmail;
         // console.log("Chunk:", chunk);
         // console.log("Meeting ID:", meeting_id);
@@ -64,7 +66,8 @@ const uploadChunk = async (req, res) => {
                     speakers: [...new Set(chunk.map(c => c.speaker))],
                     startTime: chunk[0].timestamp,
                     endTime: chunk[chunk.length - 1].timestamp,
-                    meeting_id: meeting_id
+                    meeting_id: original_meeting_id,
+                    gmail: req.user.gmail
                 }],
                 ids: [chunk_id]
             });
@@ -72,7 +75,7 @@ const uploadChunk = async (req, res) => {
                 meeting_start_time[meeting_id] = chunk[0].timestamp;
             }
             meeting_end_time[meeting_id] = chunk[chunk.length - 1].timestamp;
-            summarizeChunk(documentText, meeting_id, chunk_id);
+            // summarizeChunk(documentText, meeting_id, chunk_id);
             return res.status(200).json({ message: "Chunk uploaded successfully" });
         }
         catch (err) {

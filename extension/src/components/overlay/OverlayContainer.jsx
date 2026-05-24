@@ -3,12 +3,12 @@ import { Minimize2, Maximize2, Sparkles, GripHorizontal } from 'lucide-react';
 import OverlayLogin from './OverlayLogin';
 import OverlayControls from './OverlayControls';
 
-export default function OverlayContainer({ 
-  isMinimized, 
-  setIsMinimized, 
-  isLoggedIn, 
-  setIsLoggedIn, 
-  isRecording, 
+export default function OverlayContainer({
+  isMinimized,
+  setIsMinimized,
+  isLoggedIn,
+  setIsLoggedIn,
+  isRecording,
   setIsRecording,
   onEnd
 }) {
@@ -51,15 +51,15 @@ export default function OverlayContainer({
   }, [isDragging]);
 
   return (
-    <div 
+    <div
       className="fixed top-4 right-4 z-[2147483647] w-96 font-sans shadow-2xl transition-opacity duration-200"
       style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
     >
       {/* Translucent & Blurred Container */}
       <div className="backdrop-blur-xl bg-[#202124]/60 border border-white/10 rounded-xl overflow-hidden shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] text-white">
-        
+
         {/* Header - Draggable */}
-        <div 
+        <div
           className="flex items-center justify-between p-3 border-b border-white/10 bg-white/5 cursor-move hover:bg-white/10 transition-colors"
           onMouseDown={handleMouseDown}
         >
@@ -86,12 +86,11 @@ export default function OverlayContainer({
             {!isLoggedIn ? (
               <OverlayLogin onLoginSuccess={() => setIsLoggedIn(true)} />
             ) : (
-              <OverlayControls 
+              <OverlayControls
                 isRecording={isRecording}
                 onStart={() => setIsRecording(true)}
                 onPause={() => setIsRecording(false)}
                 onEnd={() => {
-                  setIsRecording(false);
                   if (onEnd) onEnd();
                 }}
               />

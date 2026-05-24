@@ -2,23 +2,17 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { crx } from "@crxjs/vite-plugin";
 import manifest from "./manifest.json";
-import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  server: {
-    port: 5173,
-    strictPort: true,
-
-    cors: {
-      origin: "*", // 👈 allow all (dev only)
-      methods: ["GET", "POST"],
-      allowedHeaders: ["*"]
+    plugins: [
+        react(),
+        tailwindcss(),
+        crx({ manifest })
+    ],
+    server: {
+        cors: true,
+        host: "0.0.0.0",
+        port: 5173
     }
-  },
-
-  plugins: [
-    react(),
-    crx({ manifest }),
-    tailwindcss(),
-  ]
 });

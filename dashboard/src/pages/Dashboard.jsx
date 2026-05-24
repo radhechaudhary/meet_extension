@@ -1,29 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { Moon, Sun, LogOut, Video, Database, MessageSquare, History, Check, Search, Paperclip, Send, Edit2, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
+import axios from "axios";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
 
-  // Mock Data
-  const stats = [
-    { label: 'Meetings Saved', value: '12', icon: Database, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30' },
-    { label: 'Available Meetings', value: '5', icon: Video, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
-    { label: 'Queries Made', value: '134', icon: MessageSquare, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30' },
-    { label: 'Total Recorded', value: '28', icon: History, color: 'text-amber-500', bg: 'bg-amber-100 dark:bg-amber-900/30' },
-  ];
+  const [info, setInfo] = useState({
+    total_meetings: 0,
+    queryMade: 0,
+    availableMeetings: 0,
+    meetings: []
+  })
 
-  const [currentMeeting, setCurrentMeeting] = useState({
-    title: 'Product Sync & Strategy',
-    time: '02:45:10',
-    participants: 4,
-    status: 'Recording',
-  });
+  const [stats, setStats] = useState([
+    { label: 'Meetings Saved', value: info.total_meetings, icon: Database, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+    { label: 'Available Meetings', value: info.availableMeetings, icon: Video, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
+    { label: 'Queries Made', value: info.queryMade, icon: MessageSquare, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30' },
+    { label: 'Total Recorded', value: info.total_meetings, icon: History, color: 'text-amber-500', bg: 'bg-amber-100 dark:bg-amber-900/30' },
+  ]);
 
   const [olderMeetings, setOlderMeetings] = useState([
     { id: 'm1', title: 'Q3 Roadmap Planning', date: 'Oct 12, 2026', duration: '45m' },
@@ -31,6 +31,49 @@ const Dashboard = () => {
     { id: 'm3', title: 'Engineering Standup', date: 'Oct 09, 2026', duration: '15m' },
     { id: 'm4', title: 'Client Onboarding', date: 'Oct 05, 2026', duration: '50m' },
   ]);
+
+  const [currentMeeting, setCurrentMeeting] = useState({
+    name: 'No active meetings',
+    duration: '00:00:00',
+    status: 'Not Recording',
+  });
+
+  // ......................Fetching User Info...........................
+  useEffect(() => {
+    axios.get("http://localhost:4000/dashboard/fetch", {
+      withCredentials: true
+    }).then(res => {
+
+      setInfo(res.data.data)
+      setOlderMeetings(res.data.data.meetings)
+      if (res.data.data.currentMeeting !== null) {
+        setCurrentMeeting(res.data.data.currentMeeting)
+      }
+      else {
+        setCurrentMeeting({ name: 'No active meetings', duration: '00:00:00', status: 'Not Recording' })
+      }
+      console.log(res.data.data);
+    }).catch(error => {
+      console.log(error);
+    })
+  }, [])
+
+  // Mock Data
+
+
+  useEffect(() => {
+    setStats([
+      { label: 'Meetings Saved', value: info.total_meetings, icon: Database, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+      { label: 'Available Meetings', value: info.availableMeetings, icon: Video, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
+      { label: 'Queries Made', value: info.queryMade, icon: MessageSquare, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30' },
+      { label: 'Total Recorded', value: info.total_meetings, icon: History, color: 'text-amber-500', bg: 'bg-amber-100 dark:bg-amber-900/30' },
+    ]);
+  }, [info])
+
+
+
+
+
 
   const [editingMeetingId, setEditingMeetingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
@@ -44,10 +87,33 @@ const Dashboard = () => {
   const saveEdit = (e) => {
     e.stopPropagation();
     if (editTitle.trim() === '') return cancelEdit(e);
+    console.log(editTitle, editingMeetingId)
     if (editingMeetingId === 'current') {
-      setCurrentMeeting({ ...currentMeeting, title: editTitle.trim() });
+      setCurrentMeeting({ ...currentMeeting, name: editTitle.trim() });
+      axios.post("http://localhost:4000/dashboard/edit-current-meeting-name", {
+        meeting_id: currentMeeting.meeting_id,
+        name: editTitle.trim()
+      }, {
+        withCredentials: true
+      }).then(res => {
+        console.log(res.data);
+      }).catch(error => {
+        console.log(error);
+      })
     } else {
-      setOlderMeetings(olderMeetings.map(m => m.id === editingMeetingId ? { ...m, title: editTitle.trim() } : m));
+      let temp = olderMeetings.map(m => m.meeting_id === editingMeetingId ? { ...m, name: editTitle.trim() } : m);
+      console.log("-------------------", temp)
+      setOlderMeetings(temp)
+      axios.post("http://localhost:4000/dashboard/edit-meeting-name", {
+        meeting_id: editingMeetingId,
+        name: editTitle.trim()
+      }, {
+        withCredentials: true
+      }).then(res => {
+        console.log(res.data);
+      }).catch(error => {
+        console.log(error);
+      })
     }
     setEditingMeetingId(null);
   };
@@ -57,30 +123,45 @@ const Dashboard = () => {
     setEditingMeetingId(null);
   };
 
-  const [selectedResources, setSelectedResources] = useState(['m2']);
+  const [selectedResources, setSelectedResources] = useState([]);
+
   const [chatInput, setChatInput] = useState('');
   const [messages, setMessages] = useState([
-    { role: 'bot', text: 'Hello! I am your meeting assistant. You can select older meetings as context and ask me anything about them.' }
+    { role: 'ai', content: 'Hello! I am your meeting assistant. You can select older meetings as context and ask me anything about them.' }
   ]);
   const [isSelectingResources, setIsSelectingResources] = useState(false);
 
   const handleLogout = () => navigate('/login');
 
   const toggleResource = (id) => {
-    setSelectedResources(prev => 
+    setSelectedResources(prev =>
       prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]
     );
   };
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
-    setMessages([...messages, { role: 'user', text: chatInput }]);
+
+    setMessages([...messages, { role: 'human', content: chatInput }]);
+    const msg = chatInput;
     setChatInput('');
-    // Simulate bot response
-    setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'bot', text: 'Based on the selected resources, this is a simulated response.' }]);
-    }, 1000);
+    try {
+      await axios.post("http://localhost:4000/chat-query/query", {
+        meeting_ids: selectedResources,
+        messages: [...messages, { role: 'human', content: msg }],
+      }, {
+        withCredentials: true
+      }).then(res => {
+        console.log(res.data);
+        setMessages([...messages, { role: 'human', content: chatInput }, { role: 'ai', content: res.data.response }]);
+      })
+    }
+    catch (err) {
+      setMessages([...messages, { role: 'human', content: chatInput }, { role: 'ai', content: 'Something went wrong' }]);
+      console.log(err);
+    }
+
   };
 
   return (
@@ -143,10 +224,10 @@ const Dashboard = () => {
               <CardContent>
                 {editingMeetingId === 'current' ? (
                   <div className="flex items-center gap-2 mb-1 w-full">
-                    <input 
-                      type="text" 
-                      value={editTitle} 
-                      onChange={(e) => setEditTitle(e.target.value)} 
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
                       className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 flex-1 font-semibold text-slate-800 dark:text-slate-100"
                       autoFocus
                       onKeyDown={(e) => e.key === 'Enter' && saveEdit(e)}
@@ -156,14 +237,14 @@ const Dashboard = () => {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 mb-1 group">
-                    <h4 className="text-lg font-semibold">{currentMeeting.title}</h4>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600" onClick={(e) => startEditing('current', currentMeeting.title, e)}>
+                    <h4 className="text-lg font-semibold">{currentMeeting.name}</h4>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600" onClick={(e) => startEditing('current', currentMeeting.name, e)}>
                       <Edit2 size={14} />
                     </Button>
                   </div>
                 )}
                 <p className="text-3xl font-mono tracking-wider font-light text-slate-700 dark:text-slate-300 mb-4">
-                  {currentMeeting.time}
+                  {Math.floor(currentMeeting.duration / 3600000) + ":" + Math.floor(currentMeeting.duration / 60000) % 60 + ":" + Math.floor(currentMeeting.duration / 1000) % 60 || "0:0:0"}
                 </p>
                 <div className="flex items-center text-sm text-slate-500 dark:text-slate-400 gap-2">
                   <div className="flex -space-x-2">
@@ -171,7 +252,7 @@ const Dashboard = () => {
                       <div key={i} className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-900" />
                     ))}
                   </div>
-                  <span>+{currentMeeting.participants - 3} others</span>
+
                 </div>
               </CardContent>
             </Card>
@@ -184,18 +265,18 @@ const Dashboard = () => {
               <CardContent className="p-0 flex-1 overflow-y-auto max-h-[400px]">
                 <ul className="divide-y divide-slate-100 dark:divide-slate-800/60">
                   {olderMeetings.map(meeting => (
-                    <li 
-                      key={meeting.id} 
-                      onClick={() => navigate(`/dashboard/meeting/${meeting.id}`)}
+                    <li
+                      key={meeting.meeting_id}
+                      onClick={() => navigate(`/dashboard/meeting/${meeting.meeting_id}`)}
                       className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex items-center justify-between group cursor-pointer"
                     >
                       <div className="flex-1 min-w-0 mr-4">
-                        {editingMeetingId === meeting.id ? (
+                        {editingMeetingId === meeting.meeting_id ? (
                           <div className="flex items-center gap-1.5 mb-1" onClick={e => e.stopPropagation()}>
-                            <input 
-                              type="text" 
-                              value={editTitle} 
-                              onChange={(e) => setEditTitle(e.target.value)} 
+                            <input
+                              type="text"
+                              value={editTitle}
+                              onChange={(e) => setEditTitle(e.target.value)}
                               className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 flex-1 min-w-0"
                               autoFocus
                               onKeyDown={(e) => e.key === 'Enter' && saveEdit(e)}
@@ -205,13 +286,13 @@ const Dashboard = () => {
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <p className="font-medium mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{meeting.title}</p>
-                            <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-slate-400 hover:text-indigo-600" onClick={(e) => startEditing(meeting.id, meeting.title, e)}>
+                            <p className="font-medium mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{meeting.name}</p>
+                            <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-slate-400 hover:text-indigo-600" onClick={(e) => startEditing(meeting.meeting_id, meeting.name, e)}>
                               <Edit2 size={12} />
                             </Button>
                           </div>
                         )}
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{meeting.date}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{meeting.date_time}</p>
                       </div>
                       <Badge variant="outline" className="text-xs">{meeting.duration}</Badge>
                     </li>
@@ -234,9 +315,9 @@ const Dashboard = () => {
                     <p className="text-xs text-slate-500 mt-0.5">Ask questions about your meetings</p>
                   </div>
                 </div>
-                
+
                 {/* Resource Selector Dropdown Toggle */}
-                <Button 
+                <Button
                   variant={isSelectingResources ? "primary" : "outline"}
                   size="sm"
                   className="gap-2 text-xs"
@@ -256,16 +337,15 @@ const Dashboard = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-2">
                     {olderMeetings.map(m => (
-                      <div 
-                        key={m.id}
-                        onClick={() => toggleResource(m.id)}
-                        className={`text-xs p-2.5 rounded-lg border flex items-center justify-between cursor-pointer transition-colors ${
-                          selectedResources.includes(m.id) 
-                            ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200' 
-                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
-                        }`}
+                      <div
+                        key={m.meeting_id}
+                        onClick={() => toggleResource(m.meeting_id)}
+                        className={`text-xs p-2.5 rounded-lg border flex items-center justify-between cursor-pointer transition-colors ${selectedResources.includes(m.meeting_id)
+                          ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
+                          }`}
                       >
-                        <span className="truncate mr-2">{m.title}</span>
+                        <span className="truncate mr-2">{m.name}</span>
                         {selectedResources.includes(m.id) && <Check size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />}
                       </div>
                     ))}
@@ -277,13 +357,12 @@ const Dashboard = () => {
             {/* Chat Messages */}
             <CardContent className="flex-1 overflow-y-auto p-6 space-y-6">
               {messages.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm ${
-                    msg.role === 'user' 
-                      ? 'bg-indigo-600 text-white rounded-tr-sm' 
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-sm'
-                  }`}>
-                    {msg.text}
+                <div key={idx} className={`flex ${msg.role === 'human' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm ${msg.role === 'human'
+                    ? 'bg-indigo-600 text-white rounded-tr-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-sm'
+                    }`}>
+                    {msg.content}
                   </div>
                 </div>
               ))}

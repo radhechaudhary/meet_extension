@@ -7,29 +7,95 @@ export default function App() {
     const [isMinimized, setIsMinimized] = useState(true);
     const [isRecording, setIsRecording] = useState(false);
     const isRecordingRef = useRef(false);
+    const firstRender = useRef(true);
+
 
     const observer = useRef(null);
 
     useEffect(() => {
-
-        axios.get("http://localhost:4000/user/auth", { withCredentials: true }).then((res) => {
-            setIsLoggedIn(res.data.success);
-        })
+        axios.get("http://localhost:4000/user/auth", { withCredentials: true })
+            .then((res) => {
+                console.log("response from server", res.data);
+                setIsLoggedIn(res.data.success);
+                if (res.data.status) setIsRecording(true);
+            })
     }, [])
 
     useEffect(() => {
-
+        if (firstRender.current) {
+            firstRender.current = false;
+            return;
+        }
+        console.log("isRecording", isRecording);
+        const meetingId = window.location.pathname.slice(1);
         // console.log("isRecording", isRecording);
         if (isRecording) {
+            console.log("starting meeting");
+            const captionsRoot =
+                document.querySelector('[aria-label="Captions"]');
+            if (!captionsRoot) {
+                setIsRecording(false);
+                return;
+            }
+            axios.post("http://localhost:4000/meeting/start-meeting", { meeting_id: meetingId }, { withCredentials: true })
+                .then((res) => {
+                    if (res.status !== 200) {
+                        console.log(res.data.message)
+                        setIsRecording(false);
+                    }
+                })
+                .catch((err) => {
+                    console.log(err.response.data.message)
+                    setIsRecording(false);
+                })
             startCaptionObserver();
         }
-        else {
+        else if (!isRecording) {
+            console.log("pausing meeting");
+            const captionsRoot =
+                document.querySelector('[aria-label="Captions"]');
+            if (!captionsRoot) {
+                return;
+            }
+            axios.post("http://localhost:4000/meeting/pause-meeting", { meeting_id: meetingId }, { withCredentials: true })
+                .then((res) => {
+                    if (res.status !== 200) {
+                        console.log(res.data.message)
+                    }
+                })
+                .catch((err) => {
+                    console.log(err.response.data.message)
+                })
             finalizeCurrentCaption();
             observer.current?.disconnect();
             clearTimeout(timeoutRef.current);
         }
 
     }, [isRecording]);
+
+    const onEnd = () => {
+        finalizeCurrentCaption();
+        observer.current?.disconnect();
+        clearTimeout(timeoutRef.current);
+        try {
+            const meetingId = window.location.pathname.slice(1);
+            console.log("ending meeting");
+            axios.post("http://localhost:4000/meeting/end-meeting", { meeting_id: meetingId }, { withCredentials: true })
+                .then((res) => {
+                    if (res.status !== 200) {
+                        console.log(res.data.message)
+                        setIsRecording(false);
+                    }
+                })
+                .catch((err) => {
+                    console.log(err.response.data.message)
+                    setIsRecording(false);
+                })
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
 
     // finalized transcript entries
     const transcript = useRef([]);
@@ -52,7 +118,10 @@ export default function App() {
             document.querySelector('[aria-label="Captions"]');
 
 
-        if (!captionsRoot) return;
+        if (!captionsRoot) {
+            setIsRecording(false);
+            return;
+        }
 
         console.log(captionsRoot)
 
@@ -88,7 +157,7 @@ export default function App() {
 
                 if (!speaker || !text) return;
 
-                console.log(speaker, text);
+                // console.log(speaker, text);
 
                 // if speaker changed -> finalize previous caption
                 if (
@@ -163,7 +232,10 @@ export default function App() {
     async function generateChunk() {
 
         // chunk after every 4 utterances
-        if (transcript.current.length < 20) return;
+        if (transcript.current.length < 1) {
+            console.log(transcript.current.length);
+            return;
+        }
         // console.log(transcript.current);
 
         // overlap = last 1 utterance from previous chunk
@@ -208,7 +280,7 @@ export default function App() {
         // console.log(uniqueChunk);
         try {
             const meetingId = window.location.pathname.slice(1);
-            const res = await axios.post("http://localhost:3000/data/upload-chunk", { chunk: uniqueChunk, meeting_id: meetingId })
+            const res = await axios.post("http://localhost:4000/data/upload-chunk", { chunk: uniqueChunk, meeting_id: meetingId }, { withCredentials: true })
             console.log(res.data);
         } catch (error) {
             console.log(error);
@@ -223,6 +295,7 @@ export default function App() {
             setIsLoggedIn={setIsLoggedIn}
             isRecording={isRecording}
             setIsRecording={setIsRecording}
+            onEnd={onEnd}
         />
         // <div className="bg-red-500 absolute top-0 left-0 w-full h-full z-50">
         //     hello worldjkk;l'

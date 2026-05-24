@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import jsonwebtoken from "jsonwebtoken"
+import { current_recordings } from "../constants.js";
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ const auth = async (req, res) => {
         })
     }
     const decoded = jsonwebtoken.verify(token, process.env.SECRET_KEY);
+    // console.log(current_recordings[decoded.gmail]);
     if (!decoded) {
         return res.status(401).json({
             success: false,
@@ -20,7 +22,8 @@ const auth = async (req, res) => {
     }
     return res.status(200).json({
         success: true,
-        message: "Authorized"
+        message: "Authorized",
+        status: current_recordings[decoded.gmail] ? false : true
     })
 }
 

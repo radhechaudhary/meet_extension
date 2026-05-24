@@ -42,6 +42,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { gmail, password } = req.body;
+        // console.log(req.body, "bhut fark padta hai");
 
         if (!gmail || !password) {
             return res.status(400).json({

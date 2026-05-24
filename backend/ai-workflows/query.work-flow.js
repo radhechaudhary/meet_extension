@@ -38,7 +38,7 @@ const MessagesState = {
 
     messages: z.array(z.any()),
 
-    meeting_id: z.string(),
+    meeting_ids: z.array(z.string()),
 
     query_type: z.string(),
 
@@ -47,6 +47,8 @@ const MessagesState = {
     context: z.string(),
 
     llm_response: z.string(),
+
+    gmail: z.string(),
 };
 
 // const llm = new ChatOpenRouter({
@@ -112,15 +114,24 @@ const query_type_router = (state) => {
 }
 
 const sepcific_query = async (state) => {
-    const meeting_id = state.meeting_id;
-    console.log("meeting id", meeting_id)
+    const meeting_ids = state.meeting_ids;
+    console.log("meeting id", meeting_ids)
     const query = [state.messages[state.messages.length - 1].content];
     const results = await collection.query({
         queryTexts: [query],
         nResults: 10,
         include: ["metadatas", "documents", "distances"],
         where: {
-            meeting_id: meeting_id
+            $and: [
+                {
+                    meeting_id: {
+                        $in: meeting_ids
+                    }
+                },
+                {
+                    gmail: state.gmail
+                }
+            ]
         }
     });
 
@@ -161,10 +172,7 @@ const llm_call = async (state) => {
                         Now answer this question:
                     `,
         },
-        {
-            role: "user",
-            content: state.messages[state.messages.length - 1].content,
-        }
+        ...state.messages
     ])
     state.llm_response = result['content']
     return state;

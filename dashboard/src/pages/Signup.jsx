@@ -17,7 +17,7 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:3000/user/register", { name, gmail: email, password }, { withCredentials: true });
+      const response = await axios.post("http://localhost:4000/user/register", { name, gmail: email, password }, { withCredentials: true });
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "An error occurred during signup");

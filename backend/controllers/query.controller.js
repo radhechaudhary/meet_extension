@@ -27,32 +27,26 @@ const filterResult = (results) => {
 }
 
 const query = async (req, res) => {
-    const { meeting_id } = req.params;
+    const { meeting_ids } = req.body;
     const { messages } = req.body;
 
-    if (!meeting_id) {
-        return res.status(400).json({ message: "Meeting id is required" });
+    if (!meeting_ids || meeting_ids.length == 0) {
+        return res.status(200).json({ message: "Meeting id is required", response: "Please select at least one meeting from where I can fetch the data." });
     }
 
     if (!messages) {
         return res.status(400).json({ message: "Messages is required" });
     }
-
-    try {
-        compiled_agent.invoke({
-            meeting_id: "gtth-454-fhh4",
-            messages: messages,
-        }).then((result) => {
-            return res.status(200).json({ success: true, response: result.llm_response });
+    compiled_agent.invoke({
+        meeting_ids: meeting_ids,
+        messages: messages,
+        gmail: req.user.gmail
+    }).then((result) => {
+        return res.status(200).json({ success: true, response: result.llm_response });
+    })
+        .catch((err) => {
+            console.log(err);
+            return res.status(500).json({ success: false, message: "Internal server error" });
         })
-            .catch((err) => {
-                console.log(err);
-                return res.status(500).json({ success: false, message: "Internal server error" });
-            })
-
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
-    }
 }
 export { query }
