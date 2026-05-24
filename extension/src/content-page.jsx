@@ -6,9 +6,7 @@ export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isMinimized, setIsMinimized] = useState(true);
     const [isRecording, setIsRecording] = useState(false);
-    const isRecordingRef = useRef(false);
     const firstRender = useRef(true);
-
 
     const observer = useRef(null);
 
@@ -135,7 +133,10 @@ export default function App() {
 
             console.log(captions)
 
-            if (!captions.length) return;
+            if (!captions.length) {
+                if (isRecording) setIsRecording(false);
+                return;
+            }
 
             const caption = captions[captions.length - 1];
 

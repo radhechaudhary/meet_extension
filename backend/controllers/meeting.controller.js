@@ -48,7 +48,7 @@ const endMeeting = async (req, res) => {
     meeting_saved[meeting_id] = true;
     try {
         await db.query(`INSERT INTO meetings (meeting_id, gmail, name,   duration, date_time, queries) VALUES ($1,$2,$3,$4,$5,$6)`, [meeting_id.split(" ")[0], req.user.gmail, meeting_name[meeting_id] || meeting_id.split(" ")[0], meeting_end_time[meeting_id] - meeting_start_time[meeting_id], new Date().toLocaleString(), 0]);
-        await db.query(`UPDATE user_data SET meetings = meetings + 1 WHERE gmail = $1`, [req.user.gmail]);
+        await db.query(`UPDATE users SET meetings = meetings + 1 WHERE gmail = $1`, [req.user.gmail]);
         delete meeting_status[meeting_id];
         delete current_recordings[req.user.gmail];
         delete meeting_end_time[meeting_id];

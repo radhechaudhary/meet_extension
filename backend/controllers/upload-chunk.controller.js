@@ -41,11 +41,48 @@ const summarizeChunk = async (chunk, meeting_id, chunk_id) => {
     }
 }
 
+function normalizeChunk(chunk) {
+
+    const cleaned = [];
+
+    for (const curr of chunk) {
+
+        let text = curr.text;
+
+        text = text
+            .replace(/\s+/g, " ")
+            .replace(/\n+/g, " ")
+            .trim();
+
+        const last =
+            cleaned[cleaned.length - 1];
+
+        // remove progressive caption rewrites
+        if (
+            last &&
+            last.speaker === curr.speaker &&
+            text.startsWith(last.text)
+        ) {
+
+            last.text = text;
+        }
+        else {
+
+            cleaned.push({
+                ...curr,
+                text,
+            });
+        }
+    }
+
+    return cleaned;
+}
+
 
 const uploadChunk = async (req, res) => {
     console.log("Uploading chunk");
     try {
-        const { chunk } = req.body;
+        var { chunk } = req.body;
         console.log(chunk)
         const original_meeting_id = req.body.meeting_id;
         const meeting_id = req.body.meeting_id + " " + req.user.gmail;
@@ -54,6 +91,8 @@ const uploadChunk = async (req, res) => {
         if (!chunk || !meeting_id) {
             return res.status(200).json({ message: "Chunk and meeting id is required" });
         }
+
+        chunk = normalizeChunk(chunk);
         const documentText = chunk
             .map(c => `${c.speaker}: ${c.text}`)
             .join("\n");

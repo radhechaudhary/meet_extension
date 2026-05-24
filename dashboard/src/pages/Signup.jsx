@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -10,6 +10,14 @@ const Signup = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    axios.get("http://localhost:4000/user/auth", { withCredentials: true }).then(res => {
+      navigate('/dashboard', { replace: true });
+    }).catch(err => {
+      console.log(err);
+    })
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault();

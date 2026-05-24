@@ -34,7 +34,7 @@ const Dashboard = () => {
 
   const [currentMeeting, setCurrentMeeting] = useState({
     name: 'No active meetings',
-    duration: '00:00:00',
+    duration: undefined,
     status: 'Not Recording',
   });
 
@@ -50,15 +50,20 @@ const Dashboard = () => {
         setCurrentMeeting(res.data.data.currentMeeting)
       }
       else {
-        setCurrentMeeting({ name: 'No active meetings', duration: '00:00:00', status: 'Not Recording' })
+        setCurrentMeeting({ name: 'No active meetings', duration: undefined, status: 'Not Recording' })
       }
       console.log(res.data.data);
     }).catch(error => {
+      navigate('/login', { replace: true });
       console.log(error);
     })
   }, [])
 
   // Mock Data
+
+  useEffect(() => {
+    console.log("current meeting", currentMeeting)
+  }, [currentMeeting])
 
 
   useEffect(() => {
@@ -69,9 +74,6 @@ const Dashboard = () => {
       { label: 'Total Recorded', value: info.total_meetings, icon: History, color: 'text-amber-500', bg: 'bg-amber-100 dark:bg-amber-900/30' },
     ]);
   }, [info])
-
-
-
 
 
 
@@ -131,7 +133,14 @@ const Dashboard = () => {
   ]);
   const [isSelectingResources, setIsSelectingResources] = useState(false);
 
-  const handleLogout = () => navigate('/login');
+  const handleLogout = () => {
+    axios.post("http://localhost:4000/user/logout", {}, { withCredentials: true }).then(res => {
+      navigate('/login', { replace: true });
+    }).catch(error => {
+      console.log(error);
+      navigate('/login', { replace: true });
+    })
+  }
 
   const toggleResource = (id) => {
     setSelectedResources(prev =>
@@ -238,14 +247,14 @@ const Dashboard = () => {
                 ) : (
                   <div className="flex items-center gap-2 mb-1 group">
                     <h4 className="text-lg font-semibold">{currentMeeting.name}</h4>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600" onClick={(e) => startEditing('current', currentMeeting.name, e)}>
+                    {currentMeeting.duration !== undefined ? <Button size="icon" variant="ghost" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600" onClick={(e) => startEditing('current', currentMeeting.name, e)}>
                       <Edit2 size={14} />
-                    </Button>
+                    </Button> : null}
                   </div>
                 )}
-                <p className="text-3xl font-mono tracking-wider font-light text-slate-700 dark:text-slate-300 mb-4">
+                {currentMeeting.duration !== undefined ? <p className="text-3xl font-mono tracking-wider font-light text-slate-700 dark:text-slate-300 mb-4">
                   {Math.floor(currentMeeting.duration / 3600000) + ":" + Math.floor(currentMeeting.duration / 60000) % 60 + ":" + Math.floor(currentMeeting.duration / 1000) % 60 || "0:0:0"}
-                </p>
+                </p> : null}
                 <div className="flex items-center text-sm text-slate-500 dark:text-slate-400 gap-2">
                   <div className="flex -space-x-2">
                     {[1, 2, 3].map(i => (
@@ -349,6 +358,17 @@ const Dashboard = () => {
                         {selectedResources.includes(m.id) && <Check size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />}
                       </div>
                     ))}
+                    {currentMeeting.duration !== undefined ? <div
+                      key={currentMeeting.meeting_id}
+                      onClick={() => toggleResource(currentMeeting.meeting_id)}
+                      className={`text-xs p-2.5 rounded-lg border flex items-center justify-between cursor-pointer transition-colors ${selectedResources.includes(currentMeeting.meeting_id)
+                        ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
+                        }`}
+                    >
+                      <span className="truncate mr-2">{currentMeeting.name}</span>
+                      {selectedResources.includes(currentMeeting.id) && <Check size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />}
+                    </div> : null}
                   </div>
                 </div>
               )}

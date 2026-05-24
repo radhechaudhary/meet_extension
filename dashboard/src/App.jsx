@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import MeetingDetails from './pages/MeetingDetails';
+import { useEffect } from 'react';
 
 function App() {
   return (
