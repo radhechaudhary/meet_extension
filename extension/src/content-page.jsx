@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import OverlayContainer from "./components/overlay/OverlayContainer";
+import OverlayChatBox from "./components/overlay/OverlayChatBox";
 
 export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isMinimized, setIsMinimized] = useState(true);
     const [isRecording, setIsRecording] = useState(false);
+    const [showChatBox, setShowChatBox] = useState(false);
+    const [messages, setMessages] = useState([]);
     const firstRender = useRef(true);
 
     const observer = useRef(null);
@@ -233,7 +236,7 @@ export default function App() {
     async function generateChunk() {
 
         // chunk after every 4 utterances
-        if (transcript.current.length < 1) {
+        if (transcript.current.length < 15) {
             console.log(transcript.current.length);
             return;
         }
@@ -289,17 +292,22 @@ export default function App() {
     }
 
     return (
-        <OverlayContainer
-            isMinimized={isMinimized}
-            setIsMinimized={setIsMinimized}
-            isLoggedIn={isLoggedIn}
-            setIsLoggedIn={setIsLoggedIn}
-            isRecording={isRecording}
-            setIsRecording={setIsRecording}
-            onEnd={onEnd}
-        />
-        // <div className="bg-red-500 absolute top-0 left-0 w-full h-full z-50">
-        //     hello worldjkk;l'
-        // </div>
+        <>
+            <OverlayContainer
+                isMinimized={isMinimized}
+                setIsMinimized={setIsMinimized}
+                isLoggedIn={isLoggedIn}
+                setIsLoggedIn={setIsLoggedIn}
+                isRecording={isRecording}
+                setIsRecording={setIsRecording}
+                onEnd={onEnd}
+                setShowChatBox={setShowChatBox}
+                messages={messages}
+                setMessages={setMessages}
+            />
+            {showChatBox && (
+                <OverlayChatBox meetingId={window.location.pathname.slice(1)} onClose={() => setShowChatBox(false)} messages={messages} setMessages={setMessages} />
+            )}
+        </>
     );
 }

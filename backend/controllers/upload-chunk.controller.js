@@ -10,7 +10,6 @@ var sequence = {} // [meet_id: sequence_no]
 var start_chunk_id = {} // [meet_id: start_chunk_id]
 
 
-
 const llm = new ChatOpenRouter({
     model: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
     apiKey: process.env.OPENROUTER_API_KEY,
@@ -18,7 +17,6 @@ const llm = new ChatOpenRouter({
 });
 
 const summarizeChunk = async (chunk, meeting_id, chunk_id) => {
-
     chunkMemory[meeting_id] = chunkMemory[meeting_id] ? [...chunkMemory[meeting_id], ...chunk] : [chunk];
     start_chunk_id[meeting_id] = start_chunk_id[meeting_id] ? start_chunk_id[meeting_id] : chunk_id;
     if (chunkMemory[meeting_id].length >= 5) {
@@ -114,7 +112,7 @@ const uploadChunk = async (req, res) => {
                 meeting_start_time[meeting_id] = chunk[0].timestamp;
             }
             meeting_end_time[meeting_id] = chunk[chunk.length - 1].timestamp;
-            // summarizeChunk(documentText, meeting_id, chunk_id);
+            summarizeChunk(documentText, meeting_id, chunk_id);
             return res.status(200).json({ message: "Chunk uploaded successfully" });
         }
         catch (err) {

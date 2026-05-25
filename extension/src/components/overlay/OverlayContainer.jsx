@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Minimize2, Maximize2, Sparkles, GripHorizontal } from 'lucide-react';
+import { Minimize2, Maximize2, Sparkles, GripHorizontal, MessageSquare } from 'lucide-react';
 import OverlayLogin from './OverlayLogin';
 import OverlayControls from './OverlayControls';
+import OverlayChatBox from './OverlayChatBox';
 
 export default function OverlayContainer({
   isMinimized,
@@ -10,11 +11,14 @@ export default function OverlayContainer({
   setIsLoggedIn,
   isRecording,
   setIsRecording,
-  onEnd
+  onEnd,
+  setShowChatBox
 }) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
+  // new state for chatbox visibility
+  const [showChatBox, setShowChatBox] = useState(false);
 
   const handleMouseDown = (e) => {
     // Only start dragging if left mouse button is pressed
@@ -68,16 +72,29 @@ export default function OverlayContainer({
             <Sparkles className="h-4 w-4 text-indigo-400" />
             <span className="text-sm font-medium text-white">Smart AI Helper</span>
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent drag start when clicking minimize
-              setIsMinimized(!isMinimized);
-            }}
-            onMouseDown={(e) => e.stopPropagation()} // Prevent dragging when clicking the button
-            className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 rounded-md hover:bg-white/10"
-          >
-            {isMinimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
-          </button>
+          <div className="flex items-center">
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent drag start when clicking minimize
+                setIsMinimized(!isMinimized);
+              }}
+              onMouseDown={(e) => e.stopPropagation()} // Prevent dragging when clicking the button
+              className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 rounded-md hover:bg-white/10"
+            >
+              {isMinimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
+            </button>
+            {/* Chatbox toggle button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowChatBox((prev) => !prev);
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              className="ml-2 text-slate-400 hover:text-white transition-colors cursor-pointer p-1 rounded-md hover:bg-white/10"
+            >
+              <MessageSquare className="h-3 w-3" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -96,6 +113,10 @@ export default function OverlayContainer({
               />
             )}
           </div>
+        )}
+        {/* Render ChatBox as independent container */}
+        {showChatBox && (
+          <OverlayChatBox meetingId={window.location.pathname.slice(1)} onClose={() => setShowChatBox(false)} />
         )}
       </div>
     </div>
