@@ -236,10 +236,14 @@ export default function App() {
     async function generateChunk() {
 
         // chunk after every 4 utterances
-        if (transcript.current.length < 5) {
-            console.log(transcript.current.length);
-            return;
-        }
+        const totalWords =
+            transcript.current.reduce(
+                (acc, item) =>
+                    acc +
+                    item.text.split(/\s+/).length,
+                0
+            );
+        if (totalWords < 80) return;
         // console.log(transcript.current);
 
         // overlap = last 1 utterance from previous chunk

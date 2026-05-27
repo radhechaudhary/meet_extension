@@ -10,7 +10,7 @@ import db from "../database/meet.db.js";
 dotenv.config();
 
 const filterResult = (results) => {
-    const THRESHOLD = 1.5;
+    const THRESHOLD = 2;
     if (!results.ids[0].length) {
         console.log("No results found")
         return [];
@@ -67,7 +67,7 @@ const llm = new ChatGroq({
 })
 
 const extract_query_type = async (state) => {
-    console.log(state.messages)
+    // console.log(state.messages)
     try {
         const result = await llm.invoke([
             {
@@ -148,27 +148,29 @@ const sepcific_query = async (state) => {
             ]
         }
     });
-
     const filteredResult = filterResult(results);
-    // console.log("filteredResult", filteredResult)
+    console.log("filteredResult", filteredResult)
     state.relevant_chunks = filteredResult;
 
     let context = ""
-    for (const chunk of state.relevant_chunks) {
+    for (const chunk of filteredResult) {
         context += chunk.document + "\n";
     }
+    // console.log("context", context)
     state.context = context;
     return state;
 }
 
 const general_query = async (state) => {
-    const meeting_id = state.meeting_id;
-    // const result = await db.query("select * from chunk_summaries where meeting_id = $1", [meeting_id]);
-    let context = "hello mohit"
-    // let context = ""
-    // for (const row of result.rows) {
-    //     context += `sequence ${row.sequence} : summary: ${row.summary}`
-    // }
+    const meeting_ids = state.meeting_ids;
+    console.log("meeting ids", meeting_ids)
+    var context = ""
+    for (const meeting_id of meeting_ids) {
+        const result = await db.query("select * from chunk_summaries where meeting_id = $1", [meeting_id + " " + state.gmail]);
+        for (const row of result.rows) {
+            context += `sequence ${row.sequence_number} : summary: ${row.summary}`
+        }
+    }
     state.context = context;
     return state;
 }
