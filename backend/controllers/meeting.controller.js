@@ -1,5 +1,7 @@
 import { meeting_status, current_recordings, meeting_start_time, meeting_end_time, meeting_saved, meeting_name } from "../constants.js";
 import db from "../database/meet.db.js";
+import getLLM from "../ai-workflows/chatModel.js";
+
 
 const startMeeting = (req, res) => {
     var { meeting_id } = req.body;
@@ -28,6 +30,7 @@ const startMeeting = (req, res) => {
 }
 
 const endMeeting = async (req, res) => {
+
     var { meeting_id } = req.body;
     meeting_id = meeting_id + " " + req.user.gmail;
     if (!meeting_status[meeting_id]) {
@@ -46,7 +49,34 @@ const endMeeting = async (req, res) => {
     }
     console.log("meeting ended")
     meeting_saved[meeting_id] = true;
+
     try {
+        var context = ""
+        // console.log(meeting_id)
+        const result = await db.query("select * from chunk_summaries where meeting_id = $1", [meeting_id]);
+        for (const row of result.rows) {
+            context += `sequence ${row.sequence_number} : summary: ${row.summary} //`
+        }
+        const llm = getLLM()
+        // console.log(context)
+        const llm_response = await llm.invoke(`You are a meeting summarizer.
+            Analyze the meeting transcript and return ONLY valid JSON.
+            Transcript:
+            ${context}
+            Schema:
+            {
+            "insights": ["string"],
+            "decisions_made": ["string"],
+            "topics": ["string"],
+            "summary": "string"
+            }
+
+            Return only the JSON object. No markdown. No explanations.
+            `);
+        console.log("llm_response", llm_response)
+        const summaryData = JSON.parse(llm_response.text)
+        const { insights, decisions_made, topics, summary } = summaryData;
+        await db.query('INSERT INTO meeting_info (meeting_id, gmail, insights, decisions_made, topics, summary) VALUES ($1,$2,$3,$4,$5,$6)', [meeting_id.split(" ")[0], req.user.gmail, insights, decisions_made, topics, summary]);
         await db.query(`INSERT INTO meetings (meeting_id, gmail, name,   duration, date_time, queries) VALUES ($1,$2,$3,$4,$5,$6)`, [meeting_id.split(" ")[0], req.user.gmail, meeting_name[meeting_id] || meeting_id.split(" ")[0], meeting_end_time[meeting_id] - meeting_start_time[meeting_id], new Date().toLocaleString(), 0]);
         await db.query(`UPDATE users SET meetings = meetings + 1 WHERE gmail = $1`, [req.user.gmail]);
         delete meeting_status[meeting_id];

@@ -74,4 +74,34 @@ const editMeetingName = async (req, res) => {
     })
 }
 
-export { fetchDashBoardInfo, editCurrentMeetingName, editMeetingName }
+const fetchMeetingInfo = async (req, res) => {
+    const meeting_id = req.params.meeting_id
+    const gmail = req.user.gmail;
+    // console.log(meeting_id)
+    try {
+        const data = await db.query('select insights, topics, decisions_made, summary from meeting_info where meeting_id = $1 and gmail = $2', [meeting_id, gmail]);
+        const meeting_info = await db.query("SELECT  name, date_time, duration FROM meetings WHERE gmail = $1 and meeting_id = $2  ", [gmail, meeting_id])
+        return res.status(200).json({ ...data.rows[0], ...meeting_info.rows[0] })
+    }
+    catch (err) {
+        console.log(err)
+        res.status(400).json(err)
+    }
+}
+
+const delete_meeting = async (req, res) => {
+    try {
+        await db.query(' delete from meetings where gmail = $1 and meeting_id = $2', [req.user.gmail, req.params.meeting_id])
+        await db.query(' delete from meeting_info where gmail = $1 and meeting_id = $2', [req.user.gmail, req.params.meeting_id])
+        await db.query('update users set meetings = meetings-1 where gmail = $1', [req.user.gmail])
+        const meeting_id = req.params.meeting_id + " " + req.user.gmail
+        if (meeting_saved[meeting_id]) delete meeting_saved[meeting_id]
+        res.status(200).json({ status: true })
+    }
+    catch (err) {
+        console.log(err);
+        res.status(400).json({ status: false })
+    }
+}
+
+export { fetchDashBoardInfo, editCurrentMeetingName, editMeetingName, fetchMeetingInfo, delete_meeting }

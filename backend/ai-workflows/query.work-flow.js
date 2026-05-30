@@ -4,10 +4,12 @@ import { tool } from "@langchain/core/tools";
 import { StateGraph, START, END, } from "@langchain/langgraph";
 import { z } from "zod/v4";
 import { collection } from "../db/rag.js";
-import { ChatGroq } from "@langchain/groq"
 import db from "../database/meet.db.js";
+import getLLM from "./chatModel.js";
 
 dotenv.config();
+
+const llm = getLLM();
 
 const filterResult = (results) => {
     const THRESHOLD = 2;
@@ -57,14 +59,7 @@ const MessagesState = {
 //     temperature: 0.4,
 // });
 
-const llm = new ChatGroq({
-    model: "llama-3.3-70b-versatile",
-    temperature: 0,
-    maxTokens: undefined,
-    maxRetries: 2,
-    apiKey: process.env.GROQ_API_KEY,
-    // other params...
-})
+
 
 const extract_query_type = async (state) => {
     // console.log(state.messages)

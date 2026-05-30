@@ -4,21 +4,15 @@ import { ChatGroq } from "@langchain/groq";
 import dotenv from "dotenv";
 import db from "../database/meet.db.js";
 import { meeting_start_time, meeting_end_time } from "../constants.js";
+import getLLM from "../ai-workflows/chatModel.js";
+
+const llm = getLLM()
+
 
 dotenv.config();
 var chunkMemory = {}; // [meet_id: [chunks]]
 var sequence = {} // [meet_id: sequence_no]
 var start_chunk_id = {} // [meet_id: start_chunk_id]
-
-
-const llm = new ChatGroq({
-    model: "llama-3.3-70b-versatile",
-    temperature: 0,
-    maxTokens: undefined,
-    maxRetries: 2,
-    apiKey: process.env.GROQ_API_KEY,
-    // other params...
-})
 
 const summarizeChunk = async (chunk, meeting_id, chunk_id) => {
     chunkMemory[meeting_id] = chunkMemory[meeting_id] ? [...chunkMemory[meeting_id], chunk] : [chunk];

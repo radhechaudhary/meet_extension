@@ -53,18 +53,17 @@ const Dashboard = () => {
       else {
         setCurrentMeeting({ name: 'No active meetings', duration: undefined, status: 'Not Recording' })
       }
-      console.log(res.data.data);
+      // console.log(res.data.data);
     }).catch(error => {
       navigate('/login', { replace: true });
       console.log(error);
     })
   }, [])
 
-  // Mock Data
 
-  useEffect(() => {
-    console.log("current meeting", currentMeeting)
-  }, [currentMeeting])
+  // useEffect(() => {
+  //   console.log("current meeting", currentMeeting)
+  // }, [currentMeeting])
 
 
   useEffect(() => {
@@ -186,14 +185,14 @@ const Dashboard = () => {
   }, [messages])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#202124] transition-colors duration-300 font-sans text-slate-900 dark:text-slate-100">
       {/* Top Navigation */}
-      <header className="sticky top-0 z-10 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-10 backdrop-blur-md bg-[#ffffff]/80 dark:bg-[#202124]/80 border-b border-[#dadce0] dark:border-[#3c4043] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+          <div className="w-8 h-8 rounded-lg bg-[#00796b] flex items-center justify-center text-white">
             <Video size={18} />
           </div>
-          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500">
+          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4285F4] via-[#34A853] to-[#FBBC05]">
             MeetAssist
           </h1>
         </div>
@@ -201,7 +200,7 @@ const Dashboard = () => {
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
           </Button>
-          <div className="h-8 w-px bg-slate-200 dark:bg-slate-700" />
+          <div className="h-8 w-px bg-[#dadce0] dark:bg-[#3c4043]" />
           <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
             <LogOut size={16} />
             Sign Out
@@ -231,11 +230,11 @@ const Dashboard = () => {
           {/* Left Column (Meetings) */}
           <div className="space-y-8 flex flex-col">
             {/* Current Meeting */}
-            <Card className="border-indigo-100 dark:border-indigo-900 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
+            <Card className="border-[#00796b]/30 dark:border-[#00796b]/50 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-[#00796b]" />
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-indigo-600 dark:text-indigo-400">Current Meeting</CardTitle>
+                  <CardTitle className="text-[#00796b] dark:text-[#80cbc4]">Current Meeting</CardTitle>
                   <Badge variant="default" className="animate-pulse bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5" />
                     {currentMeeting.status}
@@ -249,7 +248,7 @@ const Dashboard = () => {
                       type="text"
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 flex-1 font-semibold text-slate-800 dark:text-slate-100"
+                      className="bg-[#f8f9fa] dark:bg-[#202124] border border-[#dadce0] dark:border-[#3c4043] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 flex-1 font-semibold text-slate-800 dark:text-slate-100"
                       autoFocus
                       onKeyDown={(e) => e.key === 'Enter' && saveEdit(e)}
                     />
@@ -280,16 +279,16 @@ const Dashboard = () => {
 
             {/* Older Meetings */}
             <Card className="flex-1 flex flex-col">
-              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800/60">
+              <CardHeader className="pb-3 border-b border-[#dadce0] dark:border-[#3c4043]/60">
                 <CardTitle>Older Meetings</CardTitle>
               </CardHeader>
               <CardContent className="p-0 flex-1 overflow-y-auto max-h-[400px]">
-                <ul className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                <ul className="divide-y divide-[#dadce0] dark:divide-[#3c4043]/60">
                   {olderMeetings.map(meeting => (
                     <li
                       key={meeting.meeting_id}
                       onClick={() => navigate(`/dashboard/meeting/${meeting.meeting_id}`)}
-                      className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex items-center justify-between group cursor-pointer"
+                      className="p-4 hover:bg-[#f1f3f4]/60 dark:hover:bg-[#303134]/50 transition-colors flex items-center justify-between group cursor-pointer"
                     >
                       <div className="flex-1 min-w-0 mr-4">
                         {editingMeetingId === meeting.meeting_id ? (
@@ -298,7 +297,7 @@ const Dashboard = () => {
                               type="text"
                               value={editTitle}
                               onChange={(e) => setEditTitle(e.target.value)}
-                              className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 flex-1 min-w-0"
+                              className="bg-[#f8f9fa] dark:bg-[#202124] border border-[#dadce0] dark:border-[#3c4043] rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 flex-1 min-w-0"
                               autoFocus
                               onKeyDown={(e) => e.key === 'Enter' && saveEdit(e)}
                             />
@@ -325,10 +324,10 @@ const Dashboard = () => {
 
           {/* Right Column (Chatbot) */}
           <Card className="lg:col-span-2 flex flex-col h-[650px] shadow-sm">
-            <CardHeader className="border-b border-slate-100 dark:border-slate-800/60 pb-4">
+            <CardHeader className="border-b border-[#dadce0] dark:border-[#3c4043]/60 pb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                  <div className="w-10 h-10 rounded-full bg-[#00796b]/10 dark:bg-[#00796b]/20 flex items-center justify-center text-[#00796b] dark:text-[#80cbc4]">
                     <MessageSquare size={20} />
                   </div>
                   <div>
@@ -351,7 +350,7 @@ const Dashboard = () => {
 
               {/* Resource Selector Panel */}
               {isSelectingResources && (
-                <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-top-2">
+                <div className="mt-4 p-4 rounded-xl bg-[#f8f9fa] dark:bg-[#202124] border border-[#dadce0] dark:border-[#3c4043] animate-in fade-in slide-in-from-top-2">
                   <div className="flex items-center justify-between mb-3">
                     <h5 className="text-sm font-semibold">Select context for AI</h5>
                     <Badge variant="secondary" className="text-[10px]">{selectedResources.length} selected</Badge>
@@ -362,24 +361,24 @@ const Dashboard = () => {
                         key={m.meeting_id}
                         onClick={() => toggleResource(m.meeting_id)}
                         className={`text-xs p-2.5 rounded-lg border flex items-center justify-between cursor-pointer transition-colors ${selectedResources.includes(m.meeting_id)
-                          ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200'
-                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
+                          ? 'bg-[#00796b]/10 dark:bg-[#00796b]/20 border-[#00796b]/40 dark:border-[#00796b]/60 text-[#00796b] dark:text-[#80cbc4]'
+                          : 'bg-white dark:bg-[#303134] border-[#dadce0] dark:border-[#3c4043] text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
                           }`}
                       >
                         <span className="truncate mr-2">{m.name}</span>
-                        {selectedResources.includes(m.id) && <Check size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />}
+                        {selectedResources.includes(m.id) && <Check size={14} className="text-[#00796b] dark:text-[#80cbc4] shrink-0" />}
                       </div>
                     ))}
                     {currentMeeting.duration !== undefined ? <div
                       key={currentMeeting.meeting_id}
                       onClick={() => toggleResource(currentMeeting.meeting_id)}
                       className={`text-xs p-2.5 rounded-lg border flex items-center justify-between cursor-pointer transition-colors ${selectedResources.includes(currentMeeting.meeting_id)
-                        ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200'
-                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
+                        ? 'bg-[#00796b]/10 dark:bg-[#00796b]/20 border-[#00796b]/40 dark:border-[#00796b]/60 text-[#00796b] dark:text-[#80cbc4]'
+                        : 'bg-white dark:bg-[#303134] border-[#dadce0] dark:border-[#3c4043] text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
                         }`}
                     >
                       <span className="truncate mr-2">{currentMeeting.name}</span>
-                      {selectedResources.includes(currentMeeting.id) && <Check size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />}
+                      {selectedResources.includes(currentMeeting.id) && <Check size={14} className="text-[#00796b] dark:text-[#80cbc4] shrink-0" />}
                     </div> : null}
                   </div>
                 </div>
@@ -391,8 +390,8 @@ const Dashboard = () => {
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.role === 'human' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm ${msg.role === 'human'
-                    ? 'bg-indigo-600 text-white rounded-tr-sm'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-sm'
+                    ? 'bg-[#1a73e8] text-white rounded-tr-sm'
+                    : 'bg-[#f1f3f4] dark:bg-[#303134] text-slate-800 dark:text-slate-200 rounded-tl-sm'
                     }`}>
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
@@ -401,7 +400,7 @@ const Dashboard = () => {
             </CardContent>
 
             {/* Chat Input */}
-            <div className="p-4 bg-white dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800/60 rounded-b-2xl">
+            <div className="p-4 bg-white dark:bg-[#2d2e30] border-t border-[#dadce0] dark:border-[#3c4043] rounded-b-2xl">
               <form onSubmit={handleSendMessage} className="relative flex items-center">
                 <Button type="button" variant="ghost" size="icon" className="absolute left-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                   <Paperclip size={18} />
@@ -411,7 +410,7 @@ const Dashboard = () => {
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder="Ask about product strategy, deadlines..."
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-10 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:focus:ring-indigo-400/50 transition-shadow text-sm"
+                  className="w-full bg-[#f8f9fa] dark:bg-[#202124] border border-[#dadce0] dark:border-[#3c4043] rounded-xl py-3 pl-10 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:focus:ring-indigo-400/50 transition-shadow text-sm text-[#202124] dark:text-[#e8eaed]"
                 />
                 <Button type="submit" size="icon" variant="primary" className="absolute right-1 w-8 h-8 rounded-lg shadow-none">
                   <Send size={14} />
