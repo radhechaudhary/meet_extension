@@ -314,7 +314,7 @@ const Dashboard = () => {
                         )}
                         <p className="text-xs text-slate-500 dark:text-slate-400">{meeting.date_time}</p>
                       </div>
-                      <Badge variant="outline" className="text-xs">{meeting.duration}</Badge>
+                      <Badge variant="outline" className="text-xs">{Math.floor(meeting.duration / 3600000) + "hr " + Math.floor(meeting.duration / 60000) % 60 + "min"}</Badge>
                     </li>
                   ))}
                 </ul>

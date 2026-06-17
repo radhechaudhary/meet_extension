@@ -23,6 +23,8 @@ const auth = async (req, res) => {
     return res.status(200).json({
         success: true,
         message: "Authorized",
+        name: decoded.name,
+        gmail: decoded.gmail,
         status: current_recordings[decoded.gmail] ? false : true
     })
 }
@@ -47,6 +49,7 @@ const sessionAuth = async (req, res) => {
     return res.status(200).json({
         success: true,
         message: "Authorized",
+        gmail: gmail,
         status: current_recordings[gmail] ? false : true
     })
 }

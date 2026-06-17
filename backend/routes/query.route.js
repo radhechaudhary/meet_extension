@@ -7,6 +7,6 @@ const router = Router();
 
 router.post("/query", verifyToken, query);
 
-router.post("current-query", verifySession, query);
+router.post("/current-query", verifySession, query);
 
 export default router;

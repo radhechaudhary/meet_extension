@@ -88,11 +88,15 @@ const uploadChunk = async (req, res) => {
     console.log("Uploading chunk");
     try {
         var { chunk } = req.body;
+        if (!chunk) {
+            return res.status(400).json({
+                success: false,
+                message: "Chunk is required"
+            })
+        }
 
         const original_meeting_id = req.body.meeting_id;
         const meeting_id = req.body.meeting_id + " " + req.user.gmail;
-        // console.log("Chunk:", chunk);
-        // console.log("Meeting ID:", meeting_id);
         if (!chunk || !meeting_id) {
             return res.status(200).json({ message: "Chunk and meeting id is required" });
         }

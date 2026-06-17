@@ -124,7 +124,7 @@ export default function App() {
             return;
         }
 
-        console.log(captionsRoot)
+        // console.log(captionsRoot)
 
         // observer.current?.disconnect();
 
@@ -134,7 +134,7 @@ export default function App() {
             const captions =
                 captionsRoot.getElementsByClassName("bj4p3b");
 
-            console.log(captions)
+            // console.log(captions)
 
             if (!captions.length) {
                 if (isRecording) setIsRecording(false);
@@ -142,6 +142,7 @@ export default function App() {
             }
 
             const caption = captions[captions.length - 1];
+            console.log(caption)
 
             try {
 
@@ -161,7 +162,7 @@ export default function App() {
 
                 if (!speaker || !text) return;
 
-                // console.log(speaker, text);
+                console.log(speaker, text);
 
                 // if speaker changed -> finalize previous caption
                 if (

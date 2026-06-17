@@ -5,7 +5,12 @@ import getLLM from "../ai-workflows/chatModel.js";
 
 const startMeeting = (req, res) => {
     var { meeting_id } = req.body;
-    // console.log(req.user.gmail)
+    if (!meeting_id) {
+        return res.status(400).json({
+            success: false,
+            message: "Meeting ID is required"
+        })
+    }
     meeting_id = meeting_id + " " + req.user.gmail;
     if (meeting_saved[meeting_id]) {
         return res.status(400).json({
@@ -33,6 +38,12 @@ const startMeeting = (req, res) => {
 const endMeeting = async (req, res) => {
 
     var { meeting_id } = req.body;
+    if (!meeting_id) {
+        return res.status(400).json({
+            success: false,
+            message: "Meeting ID is required"
+        })
+    }
     meeting_id = meeting_id + " " + req.user.gmail;
     if (!meeting_status[meeting_id]) {
         return res.status(400).json({
@@ -103,6 +114,12 @@ const pauseMeeting = (req, res) => {
             message: "Meeting ID is required"
         })
     }
+    if (!meeting_id) {
+        return res.status(400).json({
+            success: false,
+            message: "Meeting ID is required"
+        })
+    }
     if (!current_recordings[req.user.gmail]) {
         return res.status(400).json({
             success: false,
@@ -127,6 +144,12 @@ const pauseMeeting = (req, res) => {
 
 const resumeMeeting = (req, res) => {
     var { meeting_id } = req.body;
+    if (!meeting_id) {
+        return res.status(400).json({
+            success: false,
+            message: "Meeting ID is required"
+        })
+    }
     meeting_id = meeting_id + " " + req.user.gmail;
     meeting_status[meeting_id] = "active";
     return res.status(200).json({

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { ArrowLeft, Trash2, Clock, Calendar, Users, MessageSquare, Sun, Moon, Lightbulb, Flag, Tag } from 'lucide-react';
+import { ArrowLeft, Trash2, Clock, Calendar, Users, MessageSquare, Sun, Moon, Lightbulb, Flag, Tag, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import axios from 'axios'
@@ -24,6 +24,7 @@ const MeetingDetails = () => {
     insights: ['Key insights: User engagement increased by 15%, performance bottlenecks identified in data fetching.'],
     topics: ['UI redesign, performance optimization, dark mode implementation'],
     decisions_made: ['Adopt new color palette, refactor data layer, schedule follow‑up meeting next week'],
+    transcript: '',
   });
 
   useEffect(() => {
@@ -46,13 +47,202 @@ const MeetingDetails = () => {
   const handleDelete = async () => {
     // Simulate API call for deletion
     try {
-      await axios.post(`http://localhost:4000/dashboard/delete-meeting/${meeting_id}`, {}, { withCredentials: true })
+      await axios.delete(`http://localhost:4000/dashboard/delete-meeting/${meeting_id}`, { withCredentials: true })
       navigate('/dashboard')
     }
     catch (err) {
       console.log(err)
     }
     setIsDeleting(true);
+  };
+
+  const handleDownloadPDF = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert("Please allow popups to download the PDF report.");
+      return;
+    }
+
+    const formattedTranscript = meeting.transcript
+      ? meeting.transcript.split('\n').map(line => {
+        if (line.includes(':')) {
+          const [speaker, ...textParts] = line.split(':');
+          const text = textParts.join(':');
+          return `<p style="margin: 6px 0; font-size: 13px; line-height: 1.5;"><strong style="color: #00796b;">${speaker}:</strong>${text}</p>`;
+        }
+        return `<p style="margin: 6px 0; font-size: 13px; line-height: 1.5;">${line}</p>`;
+      }).join('')
+      : '<p style="color: #777; font-style: italic;">No transcript available for this meeting.</p>';
+
+    const formatList = (arr) => {
+      if (!arr || arr.length === 0 || (arr.length === 1 && arr[0] === '')) {
+        return '<li style="color: #777; font-style: italic;">None recorded</li>';
+      }
+      return arr.map(item => `<li style="margin-bottom: 6px;">${item}</li>`).join('');
+    };
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Meeting Report - ${meeting.name}</title>
+        <style>
+          body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+            margin: 40px;
+            line-height: 1.6;
+          }
+          .header {
+            border-bottom: 2px solid #00796b;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+          }
+          .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #111;
+            margin: 0 0 10px 0;
+          }
+          .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+          }
+          .meta-item {
+            font-size: 12px;
+            color: #555;
+          }
+          .meta-label {
+            font-weight: bold;
+            color: #777;
+            text-transform: uppercase;
+            font-size: 10px;
+            margin-bottom: 4px;
+          }
+          .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+          }
+          .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00796b;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+          }
+          .summary-text {
+            font-size: 14px;
+            color: #444;
+            background: #fdfdfd;
+            border-left: 4px solid #00796b;
+            padding: 12px 16px;
+            margin: 0;
+            border-radius: 0 4px 4px 0;
+          }
+          .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+          }
+          .card {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+          }
+          .card-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #333;
+          }
+          .card ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 12px;
+            color: #555;
+          }
+          .transcript-box {
+            background: #fafafa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px 20px;
+            max-height: none;
+            overflow: visible;
+          }
+          @media print {
+            body {
+              margin: 20px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1 class="title">${meeting.name}</h1>
+          <div class="meta-grid">
+            <div class="meta-item">
+              <div class="meta-label">Date & Time</div>
+              <strong>${meeting.date_time}</strong>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Duration</div>
+              <strong>${Math.floor(meeting.duration / 3600000) + "hr " + Math.floor(meeting.duration / 60000) % 60 + "min"}</strong>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Participants</div>
+              <strong>${meeting.participants} Members</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">AI Summary</h2>
+          <p class="summary-text">${meeting.summary}</p>
+        </div>
+
+        <div class="section">
+          <div class="grid-3">
+            <div class="card">
+              <div class="card-title" style="color: #d97706;">Key Insights</div>
+              <ul>${formatList(meeting.insights)}</ul>
+            </div>
+            <div class="card">
+              <div class="card-title" style="color: #00796b;">Key Topics</div>
+              <ul>${formatList(meeting.topics)}</ul>
+            </div>
+            <div class="card">
+              <div class="card-title" style="color: #16a34a;">Decisions Made</div>
+              <ul>${formatList(meeting.decisions_made)}</ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="section" style="page-break-before: always;">
+          <h2 class="section-title">Meeting Transcript</h2>
+          <div class="transcript-box">
+            ${formattedTranscript}
+          </div>
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          }
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
   };
 
   return (
@@ -84,15 +274,26 @@ const MeetingDetails = () => {
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
-            <Trash2 size={16} className="mr-2" />
-            {isDeleting ? 'Deleting...' : 'Delete Meeting'}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              className="text-[#00796b] border-[#00796b]/30 hover:bg-[#00796b]/10 dark:text-[#80cbc4] dark:border-[#80cbc4]/30 dark:hover:bg-[#00796b]/20"
+              onClick={handleDownloadPDF}
+            >
+              <FileText size={16} className="mr-2" />
+              Download PDF Report
+            </Button>
+
+            <Button
+              variant="outline"
+              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              <Trash2 size={16} className="mr-2" />
+              {isDeleting ? 'Deleting...' : 'Delete Meeting'}
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -189,6 +390,32 @@ const MeetingDetails = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Transcript Section */}
+        {meeting.transcript && (
+          <Card className="mb-8 overflow-hidden">
+            <CardHeader className="pb-3 border-b border-[#dadce0] dark:border-[#3c4043]/60 bg-slate-50/50 dark:bg-[#303134]/30">
+              <CardTitle>Meeting Transcript</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="max-h-[400px] overflow-y-auto p-6 space-y-4 font-mono text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+                {meeting.transcript.split('\n').map((line, idx) => {
+                  if (line.includes(':')) {
+                    const [speaker, ...textParts] = line.split(':');
+                    const text = textParts.join(':');
+                    return (
+                      <div key={idx} className="flex gap-2 items-start">
+                        <span className="font-bold text-[#00796b] dark:text-[#80cbc4] shrink-0 min-w-[100px]">{speaker}:</span>
+                        <span>{text}</span>
+                      </div>
+                    );
+                  }
+                  return <div key={idx}>{line}</div>;
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );
