@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { ArrowLeft, Trash2, Clock, Calendar, Users, MessageSquare, Sun, Moon, Lightbulb, Flag, Tag, FileText } from 'lucide-react';

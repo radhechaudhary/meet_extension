@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { Moon, Sun, LogOut, Video, Database, MessageSquare, History, Check, Search, Paperclip, Send, Edit2, X } from 'lucide-react';

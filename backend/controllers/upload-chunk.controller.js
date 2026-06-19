@@ -30,7 +30,7 @@ const summarizeChunk = async (chunk, meeting_id, chunk_id) => {
             Text:
             ${summary_text}
         `);
-        // console.log(summary['content'])
+        console.log(summary['content'])
         try {
             db.query(`INSERT INTO chunk_summaries (meeting_id,sequence_number, start_chunk_id, end_chunk_id, summary) VALUES ($1, $2, $3, $4, $5)`, [meeting_id, sequence[meeting_id], start_chunk_id[meeting_id], chunk_id, summary['content']]);
             console.log("Summary inserted successfully");
@@ -94,7 +94,6 @@ const uploadChunk = async (req, res) => {
                 message: "Chunk is required"
             })
         }
-
         const original_meeting_id = req.body.meeting_id;
         const meeting_id = req.body.meeting_id + " " + req.user.gmail;
         if (!chunk || !meeting_id) {

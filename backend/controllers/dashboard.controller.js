@@ -105,14 +105,19 @@ const fetchMeetingInfo = async (req, res) => {
     try {
         const data = await db.query('select insights, topics, decisions_made, summary from meeting_info where meeting_id = $1 and gmail = $2', [meeting_id, gmail]);
         const meeting_info = await db.query("SELECT name, date_time, duration FROM meetings WHERE gmail = $1 and meeting_id = $2  ", [gmail, meeting_id]);
-        
         // Fetch transcript chunks from ChromaDB
         let transcript = "";
         try {
             const chromaRes = await collection.get({
                 where: {
-                    meeting_id: meeting_id,
-                    gmail: gmail
+                    $and: [
+                        {
+                            meeting_id: meeting_id
+                        },
+                        {
+                            gmail: gmail
+                        }
+                    ]
                 }
             });
             if (chromaRes && chromaRes.documents && chromaRes.documents.length > 0) {
@@ -122,7 +127,7 @@ const fetchMeetingInfo = async (req, res) => {
                         metadata: chromaRes.metadatas[idx]
                     }))
                     .sort((a, b) => (a.metadata?.startTime || 0) - (b.metadata?.startTime || 0));
-                
+
                 transcript = sortedChunks.map(c => c.document).join("\n");
             }
         } catch (chromaErr) {

@@ -25,5 +25,7 @@ dist-ssr
 
 .env
 
-chroma_knowledge_base
+
+/chroma-knowledge-base/119f347c-a232-42a5-8283-cf261b9baaa8
+/chroma-knowledge-base/chroma.sqlite3
 
