@@ -6,7 +6,7 @@ import interval from "./heatbeat.js";
 
 const app = express();
 app.use(cors({
-    origin: ["http://localhost:5173", "http://localhost:5174", "https://meet.google.com"], // frontend URL
+    origin: ["http://localhost:5173", "http://localhost:5174", "https://meet.google.com", "https://meet-transcriptor.vercel.app"], // frontend URL
     credentials: true
 }));
 app.use(cookieParser());
